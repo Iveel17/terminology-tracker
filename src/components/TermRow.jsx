@@ -1,32 +1,61 @@
-import { useRef, useEffect, useCallback, useState } from 'react'
-import { useEditableField } from '../hooks/useEditableField'
+import { useCallback, useState } from 'react'
 import SketchCanvas from './SketchCanvas'
 
-function EditableSpan({ id, field, value, updateTerm, placeholder, className = '', multiline = false }) {
-  const { ref, onBlur, onKeyDown } = useEditableField(id, field, updateTerm)
+// Reliable controlled input for single-line fields (subject, term, week)
+function InlineInput({ id, field, value, updateTerm, placeholder, className = '' }) {
+  const [local, setLocal] = useState(value || '')
 
-  useEffect(() => {
-    if (ref.current && ref.current.innerText !== value) {
-      ref.current.innerText = value || ''
+  const handleChange = (e) => setLocal(e.target.value)
+
+  const commit = () => {
+    const trimmed = local.trim()
+    if (trimmed !== (value || '').trim()) {
+      updateTerm(id, { [field]: trimmed })
     }
-  }, [value]) // sync external changes
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') e.target.blur()
+  }
 
   return (
+    <input
+      type="text"
+      value={local}
+      onChange={handleChange}
+      onBlur={commit}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      className={`inline-input ${className}`}
+    />
+  )
+}
+
+// Multiline contentEditable — only used for definition & example in expanded panel
+function MultilineEditable({ id, field, value, updateTerm, placeholder, className = '' }) {
+  return (
     <span
-      ref={ref}
       contentEditable
       suppressContentEditableWarning
-      onBlur={onBlur}
-      onKeyDown={multiline ? undefined : onKeyDown}
+      onBlur={e => {
+        const text = e.currentTarget.innerText.trim()
+        if (text !== (value || '').trim()) updateTerm(id, { [field]: text })
+      }}
       data-placeholder={placeholder}
-      className={`focus:bg-indigo-50 rounded px-0.5 cursor-text ${className}`}
-      style={{ display: 'inline-block', minWidth: '2rem' }}
+      className={`editable-cell multiline ${className}`}
+      ref={el => {
+        if (el && !el.dataset.init) {
+          el.innerText = value || ''
+          el.dataset.init = '1'
+        }
+      }}
     />
   )
 }
 
 export default function TermRow({ entry, updateTerm, deleteTerm }) {
   const { id, term, subject, week, definition, example, sketchData, sketchOpen } = entry
+  const [expanded, setExpanded] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const toggleSketch = useCallback(() => {
@@ -43,88 +72,114 @@ export default function TermRow({ entry, updateTerm, deleteTerm }) {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-      {/* Top row: term + pills + delete */}
-      <div className="flex items-start gap-2 flex-wrap">
-        <h3 className="text-lg font-bold text-gray-900 flex-1 min-w-0">
-          <EditableSpan
-            id={id} field="term" value={term} updateTerm={updateTerm}
-            placeholder="Term name" className="text-lg font-bold"
+    <>
+      {/* Main table row */}
+      <tr className={`term-row ${expanded ? 'row-expanded' : ''}`}>
+
+        {/* Subject */}
+        <td className="cell cell-subject">
+          <InlineInput
+            id={id} field="subject" value={subject} updateTerm={updateTerm}
+            placeholder="Subject" className="input-subject"
           />
-        </h3>
-        <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
-          {/* Subject pill */}
-          <span className="inline-flex items-center gap-1 text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full px-2 py-0.5">
-            <EditableSpan
-              id={id} field="subject" value={subject} updateTerm={updateTerm}
-              placeholder="Subject" className="text-xs"
-            />
+        </td>
+
+        {/* Term */}
+        <td className="cell cell-term">
+          <InlineInput
+            id={id} field="term" value={term} updateTerm={updateTerm}
+            placeholder="Term" className="input-term"
+          />
+        </td>
+
+        {/* Definition truncated — read-only preview */}
+        <td className="cell cell-def">
+          <span className="truncate-text def-font">
+            {definition || <span className="placeholder-text">Definition…</span>}
           </span>
-          {/* Week badge */}
-          <span className="inline-flex items-center gap-1 text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2 py-0.5">
-            W<EditableSpan
+        </td>
+
+        {/* Example truncated — read-only preview */}
+        <td className="cell cell-ex">
+          <span className="truncate-text">
+            {example || <span className="placeholder-text">Example…</span>}
+          </span>
+        </td>
+
+        {/* Week */}
+        <td className="cell cell-week">
+          <span className="week-badge">
+            W<InlineInput
               id={id} field="week" value={String(week || '')} updateTerm={updateTerm}
-              placeholder="0" className="text-xs"
+              placeholder="—" className="input-week"
             />
           </span>
-          {/* Delete */}
-          <button
-            onClick={handleDelete}
-            title={confirmDelete ? 'Click again to confirm' : 'Delete term'}
-            className={`ml-1 text-xs px-2 py-0.5 rounded-full border transition-colors ${
-              confirmDelete
-                ? 'bg-red-500 text-white border-red-500'
-                : 'text-gray-400 border-transparent hover:text-red-500 hover:border-red-200 hover:bg-red-50'
-            }`}
-          >
-            {confirmDelete ? '✕ confirm' : '✕'}
-          </button>
-        </div>
-      </div>
+        </td>
 
-      {/* Definition */}
-      <div className="mt-2 text-sm text-gray-700">
-        <span className="font-medium text-gray-500 text-xs uppercase tracking-wide mr-1">Def</span>
-        <EditableSpan
-          id={id} field="definition" value={definition} updateTerm={updateTerm}
-          placeholder="Write a definition…" multiline className="text-sm text-gray-700"
-        />
-      </div>
+        {/* Actions */}
+        <td className="cell cell-actions">
+          <div className="actions-group">
+            <button
+              onClick={() => setExpanded(v => !v)}
+              className={`action-btn expand-btn ${expanded ? 'active' : ''}`}
+              title={expanded ? 'Collapse' : 'Expand'}
+            >
+              {expanded ? '▲' : '▼'}
+            </button>
+            <button
+              onClick={handleDelete}
+              className={`action-btn delete-btn ${confirmDelete ? 'confirm' : ''}`}
+              title={confirmDelete ? 'Click again to confirm delete' : 'Delete'}
+            >
+              {confirmDelete ? '✕!' : '✕'}
+            </button>
+          </div>
+        </td>
+      </tr>
 
-      {/* Example */}
-      <div className="mt-1 text-sm italic text-gray-500">
-        <span className="font-medium text-gray-400 text-xs uppercase tracking-wide not-italic mr-1">Ex</span>
-        <EditableSpan
-          id={id} field="example" value={example} updateTerm={updateTerm}
-          placeholder="Write an example…" multiline className="text-sm italic text-gray-500"
-        />
-      </div>
+      {/* Expanded row */}
+      {expanded && (
+        <tr className="expanded-row">
+          <td colSpan={6}>
+            <div className="expanded-content">
 
-      {/* Draw toggle */}
-      <div className="mt-3 flex items-center gap-2">
-        <button
-          onClick={toggleSketch}
-          className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-            sketchOpen
-              ? 'bg-indigo-600 text-white border-indigo-600'
-              : 'bg-white text-gray-500 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
-          }`}
-        >
-          ✏️ Draw
-          {sketchData && !sketchOpen && (
-            <span className="w-2 h-2 rounded-full bg-indigo-400 inline-block" title="Has sketch" />
-          )}
-        </button>
-      </div>
+              {/* Full definition */}
+              <div className="expand-section">
+                <div className="expand-label">DEFINITION</div>
+                <div className="expand-editable">
+                  <MultilineEditable
+                    id={id} field="definition" value={definition} updateTerm={updateTerm}
+                    placeholder="Write a full definition…" className="def-font"
+                  />
+                </div>
+              </div>
 
-      {/* Canvas */}
-      {sketchOpen && (
-        <SketchCanvas
-          entryId={id}
-          sketchData={sketchData}
-          updateTerm={updateTerm}
-        />
+              {/* Full example */}
+              <div className="expand-section">
+                <div className="expand-label">EXAMPLE</div>
+                <div className="expand-editable">
+                  <MultilineEditable
+                    id={id} field="example" value={example} updateTerm={updateTerm}
+                    placeholder="Write a full example…"
+                  />
+                </div>
+              </div>
+
+              {/* Sketch toggle */}
+              <div className="sketch-toggle-row">
+                <button onClick={toggleSketch} className={`sketch-btn ${sketchOpen ? 'open' : ''}`}>
+                  ✏ {sketchOpen ? 'Hide Drawing' : 'Add Drawing'}
+                  {sketchData && !sketchOpen && <span className="sketch-dot" />}
+                </button>
+              </div>
+
+              {sketchOpen && (
+                <SketchCanvas entryId={id} sketchData={sketchData} updateTerm={updateTerm} />
+              )}
+            </div>
+          </td>
+        </tr>
       )}
-    </div>
+    </>
   )
 }

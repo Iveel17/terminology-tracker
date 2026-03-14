@@ -21,67 +21,68 @@ export default function App() {
   }, [entries, filters])
 
   const handleAddTerm = () => {
-    // Clear filters so new entry is visible at top
     setFilters({ search: '', subject: '', week: '' })
     const id = addTerm()
     setNewId(id)
   }
 
-  // Scroll to newly added entry
   useEffect(() => {
     if (!newId) return
     const el = document.getElementById(`term-${newId}`)
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      // Focus the term field
-      const firstEditable = el.querySelector('[contenteditable]')
-      if (firstEditable) firstEditable.focus()
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const editable = el.querySelector('[contenteditable]')
+      if (editable) editable.focus()
     }
     setNewId(null)
   }, [newId, entries])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 pb-16">
-        <Header
-          count={entries.length}
-          onExport={exportJSON}
-          onImport={importJSON}
-        />
-        <FilterBar
-          entries={entries}
-          filters={filters}
-          setFilters={setFilters}
-        />
+    <div className="app-root">
+      <div className="app-inner">
+        <Header count={entries.length} onExport={exportJSON} onImport={importJSON} />
+        <FilterBar entries={entries} filters={filters} setFilters={setFilters} />
 
-        {/* Add Term button */}
-        <div className="my-3">
-          <button
-            onClick={handleAddTerm}
-            className="w-full sm:w-auto flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-sm"
-          >
-            <span className="text-lg leading-none">+</span> Add Term
-          </button>
-        </div>
+        <div className="table-wrap">
+          {/* Table header bar with Add Term button */}
+          <div className="table-toolbar">
+            <span className="table-toolbar-label">Terms</span>
+            <button className="add-term-btn" onClick={handleAddTerm}>
+              <span className="add-plus">+</span> Add Term
+            </button>
+          </div>
 
-        {/* Entry list */}
-        <div className="flex flex-col gap-3 mt-2">
-          {filtered.length === 0 && (
-            <div className="text-center py-16 text-gray-400">
-              {entries.length === 0
-                ? 'No terms yet — click "+ Add Term" to get started.'
-                : 'No terms match your filters.'}
-            </div>
-          )}
-          {filtered.map((entry) => (
-            <div key={entry.id} id={`term-${entry.id}`}>
-              <TermRow
-                entry={entry}
-                updateTerm={updateTerm}
-                deleteTerm={deleteTerm}
-              />
-            </div>
-          ))}
+          <table className="gloss-table">
+            <thead>
+              <tr className="table-head-row">
+                <th className="th th-subject">Subject</th>
+                <th className="th th-term">Terminology</th>
+                <th className="th th-def">Definition</th>
+                <th className="th th-ex">Example</th>
+                <th className="th th-week">Week</th>
+                <th className="th th-actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="empty-state">
+                    {entries.length === 0
+                      ? 'No terms yet — click "+ Add Term" to get started.'
+                      : 'No terms match your filters.'}
+                  </td>
+                </tr>
+              )}
+              {filtered.map((entry) => (
+                <TermRow
+                  key={entry.id}
+                  entry={entry}
+                  updateTerm={updateTerm}
+                  deleteTerm={deleteTerm}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

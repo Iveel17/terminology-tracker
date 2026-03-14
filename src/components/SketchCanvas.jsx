@@ -1,29 +1,34 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 
-const CANVAS_W = 600
-const CANVAS_H = 280
+const CANVAS_W = 900
+const CANVAS_H = 300
 
 export default function SketchCanvas({ entryId, sketchData, updateTerm }) {
   const canvasRef = useRef(null)
   const drawing = useRef(false)
   const lastPos = useRef(null)
-  const [color, setColor] = useState('#1a1a1a')
+  const [color, setColor] = useState('#00e5cc')
   const [eraser, setEraser] = useState(false)
+  const [eraserPos, setEraserPos] = useState(null)
 
-  // Load existing sketch on mount
+  // Fill white background on mount, then draw sketch on top
   useEffect(() => {
-    if (!sketchData) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
-    const img = new Image()
-    img.onload = () => ctx.drawImage(img, 0, 0)
-    img.src = sketchData
-  }, []) // intentionally only on mount
+    // Always fill white first
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    if (sketchData) {
+      const img = new Image()
+      img.onload = () => ctx.drawImage(img, 0, 0)
+      img.src = sketchData
+    }
+  }, []) // only on mount
 
   const saveSketch = useCallback(() => {
     const canvas = canvasRef.current
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
-    updateTerm(entryId, { sketchData: dataUrl }, 300)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+    updateTerm(entryId, { sketchData: dataUrl }, 400)
   }, [entryId, updateTerm])
 
   const getPos = (e, canvas) => {
@@ -45,15 +50,26 @@ export default function SketchCanvas({ entryId, sketchData, updateTerm }) {
 
   const draw = (e) => {
     e.preventDefault()
+    const pos = getPos(e, canvasRef.current)
+    // Update eraser visual position
+    if (eraser) {
+      const rect = canvasRef.current.getBoundingClientRect()
+      const src = e.touches ? e.touches[0] : e
+      setEraserPos({ x: src.clientX - rect.left, y: src.clientY - rect.top })
+    }
     if (!drawing.current) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
-    const pos = getPos(e, canvas)
     ctx.beginPath()
     ctx.moveTo(lastPos.current.x, lastPos.current.y)
     ctx.lineTo(pos.x, pos.y)
-    ctx.strokeStyle = eraser ? '#ffffff' : color
-    ctx.lineWidth = eraser ? 18 : 2.5
+    if (eraser) {
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 22
+    } else {
+      ctx.strokeStyle = color
+      ctx.lineWidth = 2.5
+    }
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     ctx.stroke()
@@ -65,63 +81,88 @@ export default function SketchCanvas({ entryId, sketchData, updateTerm }) {
     if (!drawing.current) return
     drawing.current = false
     lastPos.current = null
+    setEraserPos(null)
     saveSketch()
+  }
+
+  const handleMouseLeave = (e) => {
+    setEraserPos(null)
+    endDraw(e)
   }
 
   const clearCanvas = () => {
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
     updateTerm(entryId, { sketchData: null })
   }
 
+  const COLORS = ['#00e5cc', '#ff4444', '#f5a623', '#7b61ff', '#1a1a1a']
+
   return (
-    <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden bg-white">
+    <div className="sketch-wrap">
       {/* Toolbar */}
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-gray-100 bg-gray-50">
-        <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
-          <span>Color</span>
+      <div className="sketch-toolbar">
+        <div className="color-swatches">
+          {COLORS.map(c => (
+            <button
+              key={c}
+              onClick={() => { setColor(c); setEraser(false) }}
+              className={`swatch ${color === c && !eraser ? 'swatch-active' : ''}`}
+              style={{ background: c }}
+            />
+          ))}
           <input
             type="color"
             value={color}
-            onChange={(e) => { setColor(e.target.value); setEraser(false) }}
-            className="w-6 h-6 rounded cursor-pointer border-0 p-0"
+            onChange={e => { setColor(e.target.value); setEraser(false) }}
+            className="color-picker"
+            title="Custom color"
           />
-        </label>
+        </div>
+
         <button
-          onClick={() => setEraser((v) => !v)}
-          className={`px-2 py-1 rounded text-xs font-medium border transition-colors ${
-            eraser
-              ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
-              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
-          }`}
+          onClick={() => setEraser(v => !v)}
+          className={`sketch-tool-btn ${eraser ? 'tool-active' : ''}`}
         >
-          Eraser
+          ◻ Eraser
         </button>
-        <button
-          onClick={clearCanvas}
-          className="px-2 py-1 rounded text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
-        >
-          Clear
+
+        <button onClick={clearCanvas} className="sketch-tool-btn clear-btn">
+          Clear All
         </button>
-        <span className="ml-auto text-xs text-gray-400">Draw to sketch a concept</span>
+
+        <span className="sketch-hint">Draw to illustrate a concept</span>
       </div>
 
-      {/* Canvas */}
-      <canvas
-        ref={canvasRef}
-        width={CANVAS_W}
-        height={CANVAS_H}
-        className="block w-full touch-none cursor-crosshair"
-        style={{ background: '#fff' }}
-        onMouseDown={startDraw}
-        onMouseMove={draw}
-        onMouseUp={endDraw}
-        onMouseLeave={endDraw}
-        onTouchStart={startDraw}
-        onTouchMove={draw}
-        onTouchEnd={endDraw}
-      />
+      {/* Canvas container — relative so eraser cursor can overlay */}
+      <div className="canvas-container" style={{ position: 'relative' }}>
+        <canvas
+          ref={canvasRef}
+          width={CANVAS_W}
+          height={CANVAS_H}
+          className="sketch-canvas"
+          style={{ cursor: eraser ? 'none' : 'crosshair' }}
+          onMouseDown={startDraw}
+          onMouseMove={draw}
+          onMouseUp={endDraw}
+          onMouseLeave={handleMouseLeave}
+          onTouchStart={startDraw}
+          onTouchMove={draw}
+          onTouchEnd={endDraw}
+        />
+        {/* Eraser cursor visual */}
+        {eraser && eraserPos && (
+          <div
+            className="eraser-cursor"
+            style={{
+              left: eraserPos.x,
+              top: eraserPos.y,
+            }}
+          />
+        )}
+      </div>
     </div>
   )
 }
