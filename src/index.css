@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth transitions globally */
+* { box-sizing: border-box; }
+
+[contenteditable]:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+}

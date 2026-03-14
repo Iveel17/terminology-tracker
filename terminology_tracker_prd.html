@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Georgia', serif;
+    background: #fafaf8;
+    color: #1a1a1a;
+    padding: 48px 32px;
+    max-width: 860px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  .cover {
+    border-bottom: 3px solid #1a1a1a;
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+  }
+  .tag {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 16px;
+    color: #555;
+    font-style: italic;
+  }
+  .meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #666;
+    font-family: 'Courier New', monospace;
+  }
+  .meta span strong { color: #1a1a1a; }
+
+  section { margin-bottom: 40px; }
+
+  h2 {
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 20px 0 8px;
+    color: #1a1a1a;
+  }
+  p { margin-bottom: 12px; color: #333; font-size: 15px; }
+
+  .callout {
+    background: #f0ede8;
+    border-left: 4px solid #1a1a1a;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .feature-block {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin: 12px 0;
+    background: #fff;
+  }
+  .feature-block .label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 6px;
+  }
+  .feature-block h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .feature-block p { font-size: 14px; margin: 0; }
+  .feature-block ul {
+    margin: 8px 0 0 0;
+    padding-left: 18px;
+    font-size: 14px;
+    color: #444;
+  }
+  .feature-block ul li { margin-bottom: 4px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .data-schema {
+    background: #1a1a1a;
+    color: #e8e8e8;
+    border-radius: 6px;
+    padding: 20px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .data-schema .key { color: #a8d8ea; }
+  .data-schema .type { color: #ffd59e; }
+  .data-schema .comment { color: #888; }
+
+  .priority-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .priority-table th {
+    text-align: left;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #888;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .priority-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+    color: #333;
+  }
+  .priority-table tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .p1 { background: #ffe0e0; color: #c00; }
+  .p2 { background: #fff3cc; color: #7a5500; }
+  .p3 { background: #e8f5e9; color: #2e7d32; }
+
+  .ux-flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+  .ux-step {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 13px;
+    min-width: 120px;
+    text-align: center;
+  }
+  .ux-step .num {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: #aaa;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .ux-arrow {
+    align-self: center;
+    color: #aaa;
+    padding: 0 8px;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="tag">Product Requirements Document</div>
+  <h1>Terminology Tracker</h1>
+  <p class="subtitle">A personal glossary tool for managing course terminology across 8 subjects</p>
+  <div class="meta">
+    <span><strong>Version</strong> &nbsp;1.0</span>
+    <span><strong>Status</strong> &nbsp;Draft</span>
+    <span><strong>Owner</strong> &nbsp;Personal / Solo</span>
+    <span><strong>Deploy</strong> &nbsp;Vercel</span>
+    <span><strong>Storage</strong> &nbsp;localStorage</span>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section>
+  <h2>Overview</h2>
+  <p>Terminology Tracker is a single-user personal web app for capturing and organizing course terminology across multiple subjects. Each week, new terms pile up — this tool gives them a home with definitions, examples, subject tags, week labels, and optional freehand sketch areas to visualize meaning.</p>
+  <div class="callout">
+    <strong>Core premise:</strong> No backend, no auth, no database. Everything lives in the browser via localStorage. Deploy once to Vercel, use forever for free.
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section>
+  <h2>Problem Statement</h2>
+  <p>Across 8 concurrent courses, new terminology accumulates weekly at a rate that makes it impossible to track via scattered notes. Current pain points:</p>
+  <ul style="padding-left:20px; font-size:15px; color:#333; line-height:2;">
+    <li>Terms are siloed per course with no unified view</li>
+    <li>No quick way to search across all subjects</li>
+    <li>Text definitions alone are insufficient — visual sketches help reinforce meaning</li>
+    <li>Week-by-week context is lost over time</li>
+  </ul>
+</section>
+
+<!-- DATA MODEL -->
+<section>
+  <h2>Data Model</h2>
+  <p>Each terminology entry is stored as a JSON object. Sketch data is stored as a base64 canvas blob per entry. All entries live in a single localStorage key as an array.</p>
+  <div class="data-schema">
+    <span class="comment">// localStorage key: "terminology_entries"</span><br><br>
+    {<br>
+    &nbsp;&nbsp;<span class="key">id</span>: <span class="type">string</span>, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// uuid</span><br>
+    &nbsp;&nbsp;<span class="key">term</span>: <span class="type">string</span>, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// terminology name</span><br>
+    &nbsp;&nbsp;<span class="key">subject</span>: <span class="type">string</span>, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// course / subject name</span><br>
+    &nbsp;&nbsp;<span class="key">week</span>: <span class="type">number</span>, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// week number</span><br>
+    &nbsp;&nbsp;<span class="key">definition</span>: <span class="type">string</span>, &nbsp;<span class="comment">// plain text definition</span><br>
+    &nbsp;&nbsp;<span class="key">example</span>: <span class="type">string</span>, &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// usage example</span><br>
+    &nbsp;&nbsp;<span class="key">sketchData</span>: <span class="type">string | null</span>, <span class="comment">// base64 canvas image</span><br>
+    &nbsp;&nbsp;<span class="key">sketchOpen</span>: <span class="type">boolean</span>, &nbsp;<span class="comment">// draw panel visible</span><br>
+    &nbsp;&nbsp;<span class="key">createdAt</span>: <span class="type">string</span>, &nbsp;&nbsp;<span class="comment">// ISO timestamp</span><br>
+    }
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <h2>Features</h2>
+
+  <h3>F1 — Terminology Entry Row</h3>
+  <div class="feature-block">
+    <div class="label">Core</div>
+    <h4>Add / Edit / Delete a Term</h4>
+    <ul>
+      <li>Single-row form with fields: <strong>Term</strong>, <strong>Subject</strong>, <strong>Week #</strong>, <strong>Definition</strong>, <strong>Example</strong></li>
+      <li>Inline editing — click any field to edit in place, auto-save on blur</li>
+      <li>Delete button per row with a simple confirmation</li>
+      <li>"+ Add Term" button at the top always visible</li>
+      <li>New entries appear at the top of the list</li>
+    </ul>
+  </div>
+
+  <h3>F2 — Toggleable Draw Section</h3>
+  <div class="feature-block">
+    <div class="label">Core</div>
+    <h4>Per-row freehand sketch canvas</h4>
+    <ul>
+      <li>Each row has a <strong>"Draw"</strong> toggle button — clicking it expands a canvas panel beneath that row</li>
+      <li>Canvas is a freehand drawing surface (mouse + touch support)</li>
+      <li>Tool options: pen color picker, eraser, clear canvas</li>
+      <li>Sketch is saved to localStorage on every stroke (debounced)</li>
+      <li>If a sketch exists, the toggle button shows a small filled indicator so you know it has content even when collapsed</li>
+      <li>Collapsed by default; open state is preserved per session</li>
+    </ul>
+  </div>
+
+  <h3>F3 — Filter & Search Bar</h3>
+  <div class="feature-block">
+    <div class="label">Core</div>
+    <h4>Find terms fast</h4>
+    <ul>
+      <li><strong>Search</strong>: live text filter across term name, definition, and example</li>
+      <li><strong>Filter by Subject</strong>: dropdown populated dynamically from existing subjects</li>
+      <li><strong>Filter by Week</strong>: dropdown populated dynamically from existing week numbers</li>
+      <li>Filters are combinable (e.g. subject = "Stats" AND week = 3)</li>
+      <li>Active filter count badge shown so you know when filters are applied</li>
+      <li>One-click "Clear all filters" button</li>
+    </ul>
+  </div>
+
+  <h3>F4 — Export / Import</h3>
+  <div class="feature-block">
+    <div class="label">Nice to have</div>
+    <h4>Backup and restore</h4>
+    <ul>
+      <li>Export all entries as a <code>.json</code> file (includes sketch data)</li>
+      <li>Import from a previously exported <code>.json</code> file — merges or replaces</li>
+      <li>Useful before clearing browser data or switching devices</li>
+    </ul>
+  </div>
+</section>
+
+<!-- UX FLOW -->
+<section>
+  <h2>UX Flow</h2>
+  <div class="ux-flow">
+    <div class="ux-step"><span class="num">01</span>Land on page</div>
+    <div class="ux-arrow">→</div>
+    <div class="ux-step"><span class="num">02</span>See all terms listed</div>
+    <div class="ux-arrow">→</div>
+    <div class="ux-step"><span class="num">03</span>Click "+ Add Term"</div>
+    <div class="ux-arrow">→</div>
+    <div class="ux-step"><span class="num">04</span>Fill row fields</div>
+    <div class="ux-arrow">→</div>
+    <div class="ux-step"><span class="num">05</span>Toggle Draw → sketch</div>
+    <div class="ux-arrow">→</div>
+    <div class="ux-step"><span class="num">06</span>Auto-saved</div>
+  </div>
+  <p style="margin-top:16px;">There is no explicit "save" button. All changes persist to localStorage automatically on input blur or stroke completion.</p>
+</section>
+
+<!-- PAGE LAYOUT -->
+<section>
+  <h2>Page Layout</h2>
+  <div class="feature-block">
+    <p><strong>Header</strong> — App name, entry count, Export/Import buttons</p>
+    <p><strong>Filter Bar</strong> — Search input, Subject dropdown, Week dropdown, Clear filters</p>
+    <p><strong>Entry List</strong> — Vertically stacked rows. Each row:</p>
+    <ul>
+      <li>Term name (bold, large)</li>
+      <li>Subject tag + Week badge (inline pills)</li>
+      <li>Definition (full text)</li>
+      <li>Example (italicized, labeled)</li>
+      <li>Draw toggle button (with filled indicator if sketch exists)</li>
+      <li>[Collapsible] Canvas panel with toolbar</li>
+      <li>Delete icon (far right)</li>
+    </ul>
+    <p style="margin-top:10px;"><strong>"+ Add Term" button</strong> — sticky at top of list, always accessible</p>
+  </div>
+</section>
+
+<!-- PRIORITIES -->
+<section>
+  <h2>Scope & Priorities</h2>
+  <table class="priority-table">
+    <tr>
+      <th>Priority</th>
+      <th>Feature</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td><span class="badge p1">P1</span></td>
+      <td>Add / edit / delete terminology rows</td>
+      <td>Core loop, must work first</td>
+    </tr>
+    <tr>
+      <td><span class="badge p1">P1</span></td>
+      <td>localStorage persistence</td>
+      <td>Auto-save on every change</td>
+    </tr>
+    <tr>
+      <td><span class="badge p1">P1</span></td>
+      <td>Toggleable draw canvas per row</td>
+      <td>Sketch saves as base64</td>
+    </tr>
+    <tr>
+      <td><span class="badge p1">P1</span></td>
+      <td>Filter by subject + week + search</td>
+      <td>Combinable, live filtering</td>
+    </tr>
+    <tr>
+      <td><span class="badge p2">P2</span></td>
+      <td>Export / Import JSON backup</td>
+      <td>Safety net for localStorage limits</td>
+    </tr>
+    <tr>
+      <td><span class="badge p3">P3</span></td>
+      <td>Sketch color + eraser toolbar</td>
+      <td>Basic, not full drawing suite</td>
+    </tr>
+  </table>
+</section>
+
+<!-- TECH STACK -->
+<section>
+  <h2>Technical Constraints</h2>
+  <div class="two-col">
+    <div class="feature-block">
+      <div class="label">Stack</div>
+      <h4>Recommended</h4>
+      <ul>
+        <li>React (Vite or Next.js)</li>
+        <li>Tailwind CSS</li>
+        <li>HTML5 Canvas API for drawing</li>
+        <li>No database, no auth</li>
+      </ul>
+    </div>
+    <div class="feature-block">
+      <div class="label">Deployment</div>
+      <h4>Vercel</h4>
+      <ul>
+        <li>Static site deploy (free tier)</li>
+        <li>No backend / serverless needed</li>
+        <li>All data stays in browser</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:16px;">
+    <strong>localStorage limit:</strong> ~5MB per origin. Sketch data (base64 canvas) is the largest cost. Recommend capping canvas at 600×300px and compressing to JPEG quality 0.7 on save. Export/Import feature is the safety valve if storage fills up.
+  </div>
+</section>
+
+<!-- OUT OF SCOPE -->
+<section>
+  <h2>Out of Scope (v1)</h2>
+  <ul style="padding-left:20px; font-size:15px; color:#555; line-height:2.2;">
+    <li>User accounts / authentication</li>
+    <li>Cloud sync or database</li>
+    <li>Flashcard / quiz mode</li>
+    <li>Sharing / collaboration</li>
+    <li>Rich text editor (Markdown, bold, etc.)</li>
+    <li>Mobile-native app</li>
+  </ul>
+</section>
+
+</body>
+</html>
